@@ -1,0 +1,16 @@
+CREATE DATABASE IF NOT EXISTS `ProxyDB`;
+
+CREATE TABLE IF NOT EXISTS `ProxyDB`.`Proxy` 
+  (`ProxyID` INT NOT NULL AUTO_INCREMENT,
+   `Host` VARCHAR(255) NOT NULL,
+   `Port` INT NOT NULL,
+   `Message` VARCHAR(4096) NOT NULL,
+  PRIMARY KEY (`ProxyID`))
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
+
+CREATE USER 'ProxyBot'@'localhost' IDENTIFIED BY 'PasswordGoesHere';
+
+GRANT ALL PRIVILEGES ON `ProxyDB`.* TO 'ProxyBot'@'localhost';
+
+FLUSH PRIVILEGES;
