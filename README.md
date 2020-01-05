@@ -1,5 +1,7 @@
 # proxybot
 
+Proxybot checks the connectivity of servers and displays the results on Telegram chat.
+
 ## Screenshot
 
 ![Telegram channel demonstration screenshot](screenshot.png)
