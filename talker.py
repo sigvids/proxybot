@@ -1,53 +1,54 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-''' This module sends Proxy connection testing results to the Telegram channel '''
+''' This module sends Proxy testing results to the Telegram channel '''
 
 import logging
-import telegram
 import os
 import socket
-import pymysql
 import datetime
 import time
 import pytz
+import pymysql
+from dotenv import load_dotenv
+import telegram
 
 
-def isOpen(ip, port):
+def is_open(ip_address, port):
     ''' Test to see if we can connect to a given ip and port '''
 
     # Create a socket and specify its timeout duration
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(5)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(5)
 
     # See if we can connect to the given ip and port
     try:
-        s.connect((ip, int(port)))
-        s.shutdown(socket.SHUT_RDWR)
+        sock.connect((ip_address, int(port)))
+        sock.shutdown(socket.SHUT_RDWR)
         return True
     except:
         return False
     finally:
-        s.close()
+        sock.close()
 
 
 def main():
+    ''' Test all servers in the Proxy table '''
 
     # Telegram library uses logging, so set up logging parameters
     logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                         level=logging.INFO)
 
     # Get the database password, the authorization token, and the chat ID
-    from dotenv import load_dotenv
     load_dotenv()
-    DATABASE_PASSWORD = os.getenv("DBPASS")
-    AUTHORIZATION_TOKEN = os.getenv("AUTHTOKEN")
-    CHAT_ID = os.getenv("CHATID")
+    database_password = os.getenv("DBPASS")
+    authorization_token = os.getenv("AUTHTOKEN")
+    chat_id = os.getenv("CHATID")
 
     # Create the Telegram Bot object
-    bot = telegram.Bot(token=AUTHORIZATION_TOKEN)
+    bot = telegram.Bot(token=authorization_token)
 
     # Retrieve all Proxy details from the database
-    connection = pymysql.connect("localhost", "ProxyBot", DATABASE_PASSWORD,
+    connection = pymysql.connect("localhost", "ProxyBot", database_password,
                                  "ProxyDB")
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM `Proxy`")
@@ -60,14 +61,14 @@ def main():
         now = str(pytz.utc.localize(datetime.datetime.utcnow()))[0:19] + " UTC"
 
         # See if we can make a connection to this Proxy
-        if isOpen(row[1], row[2]):
+        if is_open(row[1], row[2]):
             status = "Online at " + now
         else:
             status = "Offline at " + now
 
         # Send a message to the Telegram channel giving the results
         message_text = row[3] + "\n" + status
-        bot.send_message(chat_id=CHAT_ID, text=message_text)
+        bot.send_message(chat_id=chat_id, text=message_text)
 
         # Wait a bit to avoid looking like a DDOS or port scanner
         time.sleep(5)

@@ -4,38 +4,40 @@
 
 import os
 import socket
-import pymysql
 import datetime
 import time
 import pytz
+import pymysql
+from dotenv import load_dotenv
 
 
-def isOpen(ip, port):
+def is_open(ip_address, port):
+    ''' See if ip address and port are open for connections '''
 
     # Create a socket and specify a timeout duration
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(5)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(5)
 
     # See if we can open a connection to the given ip and port
     try:
-        s.connect((ip, int(port)))
-        s.shutdown(socket.SHUT_RDWR)
+        sock.connect((ip_address, int(port)))
+        sock.shutdown(socket.SHUT_RDWR)
         return True
     except:
         return False
     finally:
-        s.close()
+        sock.close()
 
 
 def main():
+    ''' Loop round all servers in the Proxy table '''
 
     # Get the password for the database
-    from dotenv import load_dotenv
     load_dotenv()
-    DATABASE_PASSWORD = os.getenv("DBPASS")
+    database_password = os.getenv("DBPASS")
 
-    # Retreive all the Proxy details from the Proxy table
-    connection = pymysql.connect("localhost", "ProxyBot", DATABASE_PASSWORD,
+    # Retrieve all the Proxy details from the Proxy table
+    connection = pymysql.connect("localhost", "ProxyBot", database_password,
                                  "ProxyDB")
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM `Proxy`")
@@ -47,7 +49,7 @@ def main():
         now = str(pytz.utc.localize(datetime.datetime.utcnow()))[0:19] + " UTC"
 
         # Set status depending on whether or not we can connect to the Proxy
-        if isOpen(row[1], row[2]):
+        if is_open(row[1], row[2]):
             status = "Online at " + now
         else:
             status = "Offline at " + now

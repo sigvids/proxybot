@@ -1,20 +1,21 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-''' This module prints details of all proxies in the proxy table '''
+''' This module prints details of all servers in the Proxy table '''
 
 import os
 import pymysql
+from dotenv import load_dotenv
 
 
 def main():
+    ''' Print all rows from the Proxy table '''
 
     # Get the password for the database
-    from dotenv import load_dotenv
     load_dotenv()
-    DATABASE_PASSWORD = os.getenv("DBPASS")
+    database_password = os.getenv("DBPASS")
 
     # Retrieve all rows from the Proxy table
-    connection = pymysql.connect("localhost", "ProxyBot", DATABASE_PASSWORD,
+    connection = pymysql.connect("localhost", "ProxyBot", database_password,
                                  "ProxyDB")
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM `Proxy`")
